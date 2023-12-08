@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>D3 Interactive Graph</title>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <style>
+        .node {
+            cursor: pointer;
+            stroke: #fff;
+            stroke-width: 1.5px;
+        }
+        .link {
+            fill: none;
+            stroke: #999;
+            stroke-opacity: 0.6;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <label for="node-slider">Number of Nodes: </label>
+        <input type="range" id="node-slider" min="1" max="20" value="10">
+    </div>
+    <div id="graphid"></div>
+
+    <script>
+        // Sample nodes and links
+        const allNodes = [
+            {id: "vince.kaminski@enron.com", group: 1},
+            {id: "jeff.dasovich@enron.com", group: 1},
+            {id: "suzanne.adams@enron.com,", group: 1},
+            {id: "tana.jones@enron.com", group: 1},
+            {id: "kate.yen@enron.com", group: 2},
+            {id: "enron.announcements@enron.com", group: 2},
+            {id: "kay.mann@enron.com", group: 2},
+            {id: "maureen.mcvicker@enron.com", group: 2},
+            {id: "gabriel.monroy@enron.com", group: 3},
+            {id: "mark.taylor@enron.com", group: 3},
+            {id: "nmann@erac.com", group: 3},
+            {id: "enron.announcements@enron.com", group: 3},
+            {id: "michelle.nelson@enron.com", group: 4},
+            {id: "bruce.mills@enron.com", group: 4},
+            {id: "frank.davis@enron.com", group: 4}
+        ];
+
+        const allLinks = [
+            {source: "vince.kaminski@enron.com", target: "kate.yen@enron.com", value: 210},
+            {source: "jeff.dasovich@enron.com", target: "enron.announcements@enron.com", value: 1},
+            {source: "suzanne.adams@enron.com", target: "kay.mann@enron.com", value: 155},
+            {source: "tana.jones@enron.com", target: "maureen.mcvicker@enron.com", value: 340},
+            {source: "kate.yen@enron.com", target: "gabriel.monroy@enron.com", value: 140},
+            {source: "enron.announcements@enron.com", target: "mark.taylor@enron.com", value: 190},
+            {source: "kay.mann@enron.com", target: "nmann@erac.com", value: 90},
+            {source: "maureen.mcvicker@enron.com", target: "enron.announcements@enron.com", value: 1},
+            {source: "gabriel.monroy@enron.com", target: "michelle.nelson@enron.com", value: 34},
+            {source: "nmann@erac.com", target: "bruce.mills@enron.com", value: 70},
+            {source: "enron.announcements@enron.com", target: "frank.davis@enron.com", value: 100}
+
+        ];
+
+        function drag(simulation) {
+    function dragstarted(event) {
+        if (!event.active) simulation.alphaTarget(0.3).restart();
+        event.subject.fx = event.subject.x;
+        event.subject.fy = event.subject.y;
+    }
+
+    function dragged(event) {
+        event.subject.fx = event.x;
+        event.subject.fy = event.y;
+    }
+
+    function dragended(event) {
+        if (!event.active) simulation.alphaTarget(0);
+        event.subject.fx = null;
+        event.subject.fy = null;
+    }
+
+    return d3.drag()
+        .on("start", dragstarted)
+        .on("drag", dragged)
+        .on("end", dragended);
+}
+
+const slider = d3.select("#node-slider");
+
+slider.on("input", function() {
+  const numberOfNodes = this.value;
+  const nodes = allNodes.slice(0, numberOfNodes);
+  const links = allLinks.filter(link => nodes.find(node => node.id === link.source) && nodes.find(node => node.id === link.target));
+  d3.select("#graphid").selectAll("*").remove();
+  renderGraph(nodes, links); // Pass the filtered nodes and links to the renderGraph function
+});
+
+function renderGraph(nodes, links) { // Use the nodes and links parameters
+    const width = 928;
+    const height = 400;
+
+    const svg = d3.select("#graphid").append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .attr("viewBox", [0, 0, width, height])
+        .call(d3.zoom().on("zoom", (event) => {
+            svg.attr("transform", event.transform);
+        }))
+        .append("g");
+
+    // Define the color scale
+    const color = d3.scaleOrdinal(d3.schemeCategory10);
+
+    const simulation = d3.forceSimulation(nodes)
+        .force("link", d3.forceLink(links).id(d => d.id)) // Use the links parameter
+        .force("charge", d3.forceManyBody())
+        .force("center", d3.forceCenter(width / 2, height / 2));
+
+    const link = svg.append("g")
+        .attr("stroke", "#999")
+        .attr("stroke-opacity", 0.6)
+        .selectAll("line")
+        .data(links)
+        .join("line")
+        .attr("stroke-width", d => Math.sqrt(d.value));
+
+    const node = svg.append("g")
+        .selectAll("circle")
+        .data(nodes)
+        .join("circle")
+        .attr("r", 5)
+        .attr("fill", d => color(d.group))
+        .call(drag(simulation));
+
+    node.append("title")
+        .text(d => d.id);
+
+    simulation.on("tick", () => {
+        link
+            .attr("x1", d => d.source.x)
+            .attr("y1", d => d.source.y)
+            .attr("x2", d => d.target.x)
+            .attr("y2", d => d.target.y);
+
+        node
+            .attr("cx", d => d.x)
+            .attr("cy", d => d.y);
+    });
+}
+
+        // Initial render
+        renderGraph(allNodes.slice(0, 10), allLinks);
+
+    </script>
+</body>
+</html>

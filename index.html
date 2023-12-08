@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <meta name="description" content="">
+        <meta name="author" content="">
+
+        <title>DAV PROJECT</title>
+
+        <!-- CSS FILES -->        
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/font-awesome.css') }}">
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/fullpage.min.css') }}">
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/owl.carousel.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/animate.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/templatemo-style.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.css') }}">        
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,200;0,400;0,700;1,200&family=Unbounded:wght@400;700&display=swap" rel="stylesheet">
+        <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+        <link href="{{ url_for('static', filename='css/bootstrap-icons.css') }}" rel="stylesheet">
+        <link href="{{ url_for('static', filename='css/tooplate-kool-form-pack.css') }}" rel="stylesheet">
+
+        
+        <style>
+            #graphid {
+                position: absolute;
+                left: 5%; 
+                top: 200px; 
+                width: 40%; 
+                height: 60vh; 
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+                border-radius: 20px; 
+                padding: 20px; 
+                overflow: hidden; 
+                transition: box-shadow 0.3s ease; /* Add transition effect for the shadow */
+            }
+        
+            #graphid:hover {
+                box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Larger shadow on hover */
+            }
+            
+            .btn-container {
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+   margin-bottom: 20px;
+}
+
+.btn-primary {
+   background-color: gray !important;
+   border-color: gray !important;
+   color: white !important;
+   margin-right: 10px;
+}
+
+.description {
+   margin-left: 10px;
+   color: white !important;
+}
+
+            
+            .header-text {
+        position: absolute;
+        top: 55 px;
+        bottom: 50px;
+        left: 40px; 
+        color: white; 
+        font-size: 3.5em; 
+    }
+
+        </style>     
+        
+    </head>
+
+    
+    <body>
+        <main>
+            <header class="site-header">
+                <div class="container">
+                    <div class="row justify-content-between">
+                        <div class="col-lg-12 col-12 d-flex align-items-center">
+                            <a class="site-header-text d-flex justify-content-center align-items-center me-auto" href="index.html">
+                                <i class="bi-box"></i>
+                                <span>
+                                    Graph Visuals
+                                </span>
+                            </a>
+
+                            <ul class="social-icon d-flex justify-content-center align-items-center mx-auto">
+                                <span class="text-white me-4 d-none d-lg-block">TEXTUAL DATA INSIGHT HUB</span>
+                            </ul>
+
+                            <div>
+                                <a href="/wordcloud" id="wordcloud-button" class="custom-btn custom-border-btn btn">
+                                    Word Cloud <i class="bi-arrow-right ms-2"></i>
+                                </a>
+                            </div>                            
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <section class="hero-section d-flex justify-content-center align-items-center" id="section_1">
+                <div id="fullpage" class="fullpage-default">
+                    <div class="section animated-row" data-section="slide01">
+                        <div class="section-inner">
+                            <div class="welcome-box">
+                                <span class="welcome-first animate" data-animate="fadeInUp">Data Analysis and Visualization</span>
+                                <p class="animate" data-animate="fadeInUp">
+                                   
+                                    <div class="btn-container">
+                                        <a href="{{ url_for('dav_project') }}" class="btn btn-primary">Word Cloud</a>
+                                        <span class="description">A word cloud is a visual representation of text data, where the size of each word indicates its frequency/importance.</span>
+                                     </div>
+                                     
+                                     <div class="btn-container">
+                                        <a href="{{ url_for('dav_project1') }}" class="btn btn-primary">Tree</a>
+                                        <span class="description">The expandable tree diagram visualizes the topic modeling. It shows count of eac type of Enitity</span>
+                                     </div>
+                                     
+                                     <div class="btn-container">
+                                        <a href="{{ url_for('dav_project2') }}" class="btn btn-primary">Force-directed graph</a>
+                                        <span class="description">The force-directed graph is built on top of most frequent interactors in the dataset using source, target, weight.</span>
+                                     </div>
+                                     
+                                     <div class="btn-container">
+                                        <a href="{{ url_for('dav_project3') }}" class="btn btn-primary">Sunburst Tree</a>
+                                        <span class="description">A sunburst tree is a visualization of hierarchical data where the nodes represent the NAMED ENTITIES in a circular layout.</span>
+                                     </div>
+                                     
+                                     <div class="btn-container">
+                                        <a href="{{ url_for('dav_project4') }}" class="btn btn-primary">Scatter</a>
+                                        <span class="description">A scatter plot uses Cartesian coordinates to display values for typically two variables for a set of data.</span>
+                                     </div>
+                                </p>
+                             </div>
+                             
+                        </div>
+                    </div>
+                </div> 
+                <div class="video-wrap">
+                    <video autoplay="" loop="" muted="" class="custom-video" poster="">
+                        <source src="{{ url_for('static', filename='images/video.mp4') }}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+
+            </section>
+        </main>
+
+        <!-- JAVASCRIPT FILES -->
+        <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/bootstrap.bundle.minx.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/init.js') }}"></script>
+        <script src="https://d3js.org/d3.v7.min.js"></script>
+        <script src="{{ url_for('static', filename='js/d3graph.js') }}"></script>
+        
+        <script src="{{ url_for('static', filename='js/jquery.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/fullpage.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/jquery.inview.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/custom.js') }}"></script>
+    </body>
+</html>

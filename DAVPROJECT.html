@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Cloud Visualization</title>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="https://cdn.rawgit.com/jasondavies/d3-cloud/v1.2.0/build/d3.layout.cloud.js"></script>
+    <style>
+        /* Add some basic styling to the SVG container */
+        svg {
+            display: block;
+            margin: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            function makeCloud(words) {
+                try {
+                    var svg = d3.select("body").append("svg")
+                        .attr("width", 1000)
+                        .attr("height", 500)
+                        .append("g")
+                        .attr("transform", "translate(500,250)");
+
+                    var layout = d3.layout.cloud()
+                        .size([1000, 500])
+                        .words(words)
+                        .padding(5)
+                        .rotate(() => (~~(Math.random() * 6) - 3) * 30)
+                        .fontSize(d => d.size)
+                        .on("end", draw);
+
+                    layout.start();
+
+                    function draw(words) {
+                        svg.selectAll("text")
+                            .data(words)
+                            .enter().append("text")
+                            .style("font-size", d => `${d.size}px`)
+                            .style("font-family", "Arial")
+                            .attr("text-anchor", "middle")
+                            .attr("transform", d => `translate(${[d.x, d.y]})rotate(${d.rotate})`)
+                            .attr("fill", d => d.fill)
+                            .text(d => d.text);
+                    }
+                } catch (error) {
+                    console.error("Error creating word cloud:", error);
+                }
+            }
+
+            function fetchData(url) {
+                d3.csv(url)
+                    .then(data => {
+                      
+                        if (Array.isArray(data)) {
+                            var words = data.map(d => ({
+                                text: d.word,
+                                size: +d.frequency * 10,
+                                fill: d3.rgb(Math.random() * 255, Math.random() * 255, Math.random() * 255)
+                            }));
+
+                            makeCloud(words);
+                        } else {
+                            console.error("Error: Data is not an array.");
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error fetching data:", error);
+                    });
+            }
+
+            const csvUrl = '/static/wordcloud1.csv';
+
+            // Fetch data from the CSV file and create word cloud
+            fetchData(csvUrl);
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+   <head>
+       <meta charset="utf-8">
+       <meta name="viewport" content="width=device-width, initial-scale=1">
+
+       <meta name="description" content="">
+       <meta name="author" content="">
+
+       <title>DAV PROJECT</title>
+
+       <!-- CSS FILES -->               
+       <link rel="preconnect" href="https://fonts.googleapis.com">
+       <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+       <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,200;0,400;0,700;1,200&family=Unbounded:wght@400;700&display=swap" rel="stylesheet">
+       <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+       <link href="{{ url_for('static', filename='css/bootstrap-icons.css') }}" rel="stylesheet">
+       <link href="{{ url_for('static', filename='css/tooplate-kool-form-pack.css') }}" rel="stylesheet">
+
+       <style>
+           #graphid {
+               position: absolute;
+               left: 5%; 
+               top: 200px; 
+               width: 40%; 
+               height: 60vh; 
+               box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+               border-radius: 20px; 
+               padding: 20px; 
+               overflow: hidden; 
+               transition: box-shadow 0.3s ease; /* Add transition effect for the shadow */
+           }
+       
+           #graphid:hover {
+               box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Larger shadow on hover */
+           }
+
+           .header-text {
+               position: absolute;
+               top: 55px;
+               bottom: 50px;
+               left: 190px; 
+               color: #9BB8CD; 
+               font-size: 3.5em; 
+           }
+       </style>    
+   </head>
+
+   <body>
+       <main>
+           <header class="site-header">
+               <div class="container">
+                  <div class="row justify-content-between">
+                      <div class="col-lg-12 col-12 d-flex align-items-center">
+                          <a class="site-header-text d-flex justify-content-center align-items-center me-auto" href="index.html">
+                              <i class="bi-box"></i>
+                              <span>
+                                 Graph Visuals
+                              </span>
+                          </a>
+
+                          <ul class="social-icon d-flex justify-content-center align-items-center mx-auto">
+                              <span class="text-white me-4 d-none d-lg-block">TEXTUAL DATA INSIGHT HUB</span>
+                          </ul>
+
+                          <div>
+                              <a href="/wordcloud" id="wordcloud-button" class="custom-btn custom-border-btn btn">
+                                 Word Cloud <i class="bi-arrow-right ms-2"></i>
+                              </a>
+                          </div>                          
+                      </div>
+                  </div>
+               </div>
+           </header>
+
+           <section class="hero-section d-flex justify-content-center align-items-center" id="section_1">
+               <div class="header-text"> Force-directed graph </div>
+               <div id="graphid"></div>
+
+               <div class="video-wrap">
+                  <video autoplay="" loop="" muted="" class="custom-video" poster="">
+                      <source src="{{ url_for('static', filename='videos/video.mp4') }}" type="video/mp4">
+                      Your browser does not support the video tag.
+                  </video>
+               </div>
+
+           </section>
+       </main>
+
+       <!-- JAVASCRIPT FILES -->
+       <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+       <script src="{{ url_for('static', filename='js/bootstrap.bundle.minx.js') }}"></script>
+       <script src="{{ url_for('static', filename='js/init.js') }}"></script>
+       <script src="https://d3js.org/d3.v7.min.js"></script>
+       <script>
+
+function drag(simulation) {
+    function dragstarted(event) {
+        if (!event.active) simulation.alphaTarget(0.3).restart();
+        event.subject.fx = event.subject.x;
+        event.subject.fy = event.subject.y;
+    }
+
+    function dragged(event) {
+        event.subject.fx = event.x;
+        event.subject.fy = event.y;
+    }
+
+    function dragended(event) {
+        if (!event.active) simulation.alphaTarget(0);
+        event.subject.fx = null;
+        event.subject.fy = null;
+    }
+
+    return d3.drag()
+        .on("start", dragstarted)
+        .on("drag", dragged)
+        .on("end", dragended);
+}
+
+const slider = d3.select("#node-slider");
+slider.on("input", function() {
+    const numberOfNodes = this.value;
+});
+
+function renderGraph() {
+    fetch('http://localhost:5000/data')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (!Array.isArray(data.links) || !Array.isArray(data.nodes)) {
+                throw new Error('Data is missing links or nodes, or they are not in array format');
+            }
+
+            const width = 928;
+            const height = 400;
+
+            const svg = d3.select("#graphid").append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .attr("viewBox", [0, 0, width, height])
+                .call(d3.zoom().on("zoom", (event) => {
+                    svg.attr("transform", event.transform);
+                }))
+                .append("g");   
+
+            // Define the color scale
+            const color = d3.scaleOrdinal(d3.schemeCategory10);
+
+            const links = data.links.map(d => ({...d}));
+            const nodes = data.nodes.map(d => ({...d}));
+
+            const simulation = d3.forceSimulation(nodes)
+                .force("link", d3.forceLink(links).id(d => d.id))
+                .force("charge", d3.forceManyBody())
+                .force("center", d3.forceCenter(width / 2, height / 2));
+
+            const link = svg.append("g")
+                .attr("stroke", "#999")
+                .attr("stroke-opacity", 0.6)
+                .selectAll("line")
+                .data(links)
+                .join("line")
+                .attr("stroke-width", d => Math.sqrt(d.value));
+
+            const node = svg.append("g")
+                .selectAll("circle")
+                .data(nodes)
+                .join("circle")
+                .attr("r", 5)
+                .attr("fill", d => color(d.group)) 
+                .call(drag(simulation));
+
+            node.append("title")
+                .text(d => d.id);
+
+            simulation.on("tick", () => {
+                link
+                    .attr("x1", d => d.source.x)
+                    .attr("y1", d => d.source.y)
+                    .attr("x2", d => d.target.x)
+                    .attr("y2", d => d.target.y);
+
+                node
+                    .attr("cx", d => d.x)
+                    .attr("cy", d => d.y);
+            });
+        })
+        .catch(error => {
+            console.error('Error processing data:', error);
+        });
+}
+
+renderGraph();
+
+</script>
+</body>
+</html>

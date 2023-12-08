@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<!-- Load d3.js -->
+<script src="https://d3js.org/d3.v4.js"></script>
+
+<!-- Create a div where the graph will take place -->
+<div id="my_dataviz"></div>
+<script>
+  // Your hardcoded data
+  const hardcodedData = [
+  {"word": "ect", "Frequency": 1091.0},
+  {"word": "enron", "Frequency": 820.0},
+  {"word": "phillip", "Frequency": 647.0},
+  {"word": "k", "Frequency": 339.0},
+  {"word": "pm", "Frequency": 290.0},
+  {"word": "subject", "Frequency": 241.0},
+  {"word": "would", "Frequency": 229.0},
+  {"word": "forwarded", "Frequency": 226.0},
+  {"word": "cc", "Frequency": 225.0},
+  {"word": "enronxgate", "Frequency": 218.0},
+  {"word": "ees", "Frequency": 202.0},
+  {"word": "please", "Frequency": 189.0},
+  {"word": "gas", "Frequency": 158.0},
+  {"word": "need", "Frequency": 136.0},
+  {"word": "project", "Frequency": 110.0},
+  {"word": "get", "Frequency": 108.0},
+  {"word": "allen", "Frequency": 106.0},
+  {"word": "call", "Frequency": 105.0},
+  {"word": "meeting", "Frequency": 102.0},
+  {"word": "power", "Frequency": 98.0},
+  {"word": "cost", "Frequency": 94.0},
+  {"word": "loan", "Frequency": 91.0},
+  {"word": "work", "Frequency": 89.0},
+  {"word": "know", "Frequency": 88.0},
+  {"word": "time", "Frequency": 87.0},
+  {"word": "like", "Frequency": 85.0},
+  {"word": "also", "Frequency": 85.0},
+  {"word": "john", "Frequency": 84.0},
+  {"word": "price", "Frequency": 84.0},
+  {"word": "new", "Frequency": 83.0},
+  {"word": "email", "Frequency": 78.0},
+  {"word": "jeff", "Frequency": 73.0},
+  {"word": "george", "Frequency": 70.0},
+  {"word": "scott", "Frequency": 67.0},
+  {"word": "mike", "Frequency": 66.0},
+  {"word": "list", "Frequency": 66.0},
+  {"word": "let", "Frequency": 65.0},
+  {"word": "think", "Frequency": 65.0},
+  {"word": "plan", "Frequency": 65.0},
+  {"word": "sent", "Frequency": 64.0},
+  {"word": "j", "Frequency": 64.0},
+  {"word": "construction", "Frequency": 64.0},
+  {"word": "keith", "Frequency": 63.0},
+  {"word": "may", "Frequency": 63.0},
+  {"word": "use", "Frequency": 63.0},
+  {"word": "week", "Frequency": 63.0},
+  {"word": "1", "Frequency": 61.0},
+  {"word": "mark", "Frequency": 61.0},
+  {"word": "one", "Frequency": 60.0},
+  {"word": "land", "Frequency": 60.0},
+  {"word": "market", "Frequency": 60.0},
+  {"word": "costs", "Frequency": 59.0},
+  {"word": "position", "Frequency": 59.0},
+  {"word": "want", "Frequency": 59.0},
+  {"word": "http", "Frequency": 59.0},
+  {"word": "cash", "Frequency": 58.0},
+  {"word": "questions", "Frequency": 57.0},
+  {"word": "access", "Frequency": 57.0},
+  {"word": "see", "Frequency": 56.0},
+  {"word": "thanks", "Frequency": 56.0},
+  {"word": "deal", "Frequency": 55.0},
+  {"word": "back", "Frequency": 54.0},
+  {"word": "basis", "Frequency": 54.0},
+  {"word": "richard", "Frequency": 53.0}
+];
+
+  // set the dimensions and margins of the graph
+  var margin = {top: 10, right: 30, bottom: 30, left: 60},
+      width = 960 - margin.left - margin.right,
+      height = 500 - margin.top - margin.bottom;
+
+  // append the svg object to the body of the page
+  var svg = d3.select("#my_dataviz")
+    .append("svg")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+      .attr("transform",
+            "translate(" + margin.left + "," + margin.top + ")");
+
+  // X axis
+  var x = d3.scaleBand()
+    .range([ 0, width ])
+    .domain(hardcodedData.map(function(d) { return d.word; }))
+    .padding(0.1);
+  svg.append("g")
+    .attr("transform", "translate(0," + height + ")")
+    .call(d3.axisBottom(x))
+    .selectAll("text")
+      .attr("transform", "translate(-10,0)rotate(-45)")
+      .style("text-anchor", "end");
+
+  // Add Y axis
+  var y = d3.scaleLinear()
+    .domain([0, d3.max(hardcodedData, function(d) { return d.Frequency; })])
+    .range([ height, 0]);
+  svg.append("g")
+    .call(d3.axisLeft(y));
+
+  // Tooltip
+  var tooltip = d3.select("#my_dataviz")
+    .append("div")
+    .style("opacity", 0)
+    .attr("class", "tooltip")
+    .style("background-color", "white")
+    .style("border", "solid")
+    .style("border-width", "2px")
+    .style("border-radius", "5px")
+    .style("padding", "5px");
+
+  // Three function that change the tooltip when user hover / move / leave a cell
+  var mouseover = function(event, d) {
+    tooltip
+      .style("opacity", 1);
+    d3.select(this)
+      .style("stroke", "black")
+      .style("opacity", 1);
+  }
+  var mousemove = function(event, d) {
+    tooltip
+      .html("Word: " + d.word + "<br>Frequency: " + d.Frequency)
+      .style("left", (event.x)/2 + "px")
+      .style("top", (event.y)/2 - 30 + "px");
+  }
+  var mouseleave = function(event, d) {
+    tooltip
+      .style("opacity", 0);
+    d3.select(this)
+      .style("stroke", "none")
+      .style("opacity", 0.8);
+  }
+
+  // Add dots
+  svg.append('g')
+    .selectAll("dot")
+    .data(hardcodedData)
+    .enter()
+    .append("circle")
+      .attr("class", "dot")
+      .attr("cx", function (d) { return x(d.word); } )
+      .attr("cy", function (d) { return y(d.Frequency); } )
+      .attr("r", 5)
+      .style("fill", "#69b3a2")
+      .style("opacity", 0.8)
+      .attr("stroke", "white")
+      .on("mouseover", mouseover)
+      .on("mousemove", mousemove)
+      .on("mouseleave", mouseleave);
+</script>
+
+</body>
+</html>

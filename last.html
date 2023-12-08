@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <!-- Load d3.js -->
+    <script src="https://d3js.org/d3.v4.js"></script>
+    <style>
+        text {
+            font-size: 10px;
+            font-family: sans-serif;
+        }
+    </style>
+</head>
+<body>
+
+<div id="my_dataviz"></div>
+<div id="tooltip" style="position: absolute; visibility: hidden;"></div>
+
+<script>
+
+
+const hardcodedData = [
+    {"word": "ect", "Frequency": 1091.0, "Category": "Business"},
+    {"word": "enron", "Frequency": 820.0, "Category": "Business"},
+    {"word": "richard", "Frequency": 53.0, "Category": "People"},
+    {"word": "Microsoft", "Frequency": 728.0, "Category": "ORG"},
+    {"word": "George Bush", "Frequency": 55.0, "Category": "PERSON"},
+    {"word": "Andrew Fastow", "Frequency": 225.0, "Category": "PERSON"},
+    {"word": "Kenneth Lay ", "Frequency": 445.0, "Category": "PERSON"},
+    {"word": "1998", "Frequency": 275.0, "Category": "DATE"},
+    {"word": "1993", "Frequency": 25.0, "Category": "DATE"},
+    {"word": "New York", "Frequency": 208.0, "Category": "GPE"},
+    {"word": "Morning", "Frequency": 164.0, "Category": "TIME"},
+    {"word": "$1000", "Frequency": 57.0, "Category": "MONEY"},
+    {"word": "iPhone", "Frequency": 55.0, "Category": "PRODUCT"},
+    {"word": "Americans", "Frequency": 38.0, "Category": "NORP"},
+    {"word": "First", "Frequency": 30.0, "Category": "ORDINAL"},
+    {"word": "Starry Night", "Frequency": 29.0, "Category": "WORK_OF_ART"},
+    {"word": "Himalayas", "Frequency": 17.0, "Category": "LOC"},
+    {"word": "Constitution", "Frequency": 11.0, "Category": "LAW"},
+    {"word": "Two Liters", "Frequency": 11.0, "Category": "QUANTITY"},
+    {"word": "Eiffel Tower", "Frequency": 10.0, "Category": "FAC"},
+    {"word": "50%", "Frequency": 9.0, "Category": "PERCENT"},
+    {"word": "Olympics", "Frequency": 6.0, "Category": "EVENT"}
+];
+
+
+  // Group data by category
+  const groupedData = { name: "root", children: [] };
+  const categoryMap = {};
+  hardcodedData.forEach(d => {
+    if (!categoryMap[d.Category]) {
+      categoryMap[d.Category] = { name: d.Category, children: [] };
+      groupedData.children.push(categoryMap[d.Category]);
+    }
+    categoryMap[d.Category].children.push({ name: d.word, value: d.Frequency });
+  });
+
+  // Set the dimensions
+  const width = 928;
+  const height = 700; // Define height
+  const radius = width / 6;
+
+  // Create the color scale
+  const color = d3.scaleOrdinal(d3.quantize(d3.interpolateRainbow, groupedData.children.length + 1));
+
+  // Compute the layout
+  const hierarchy = d3.hierarchy(groupedData)
+    .sum(d => d.value)
+    .sort((a, b) => b.value - a.value);
+  const root = d3.partition()
+    .size([2 * Math.PI, hierarchy.height + 1])
+    (hierarchy);
+  root.each(d => d.current = d);
+
+  // Create the arc generator
+  const arc = d3.arc()
+    .startAngle(d => d.x0)
+    .endAngle(d => d.x1)
+    .padAngle(d => Math.min((d.x1 - d.x0) / 2, 0.005))
+    .padRadius(radius * 1.5)
+    .innerRadius(d => d.y0 * radius)
+    .outerRadius(d => Math.max(d.y0 * radius, d.y1 * radius - 1))
+
+  // Create the SVG container
+  const svg = d3.select("#my_dataviz").append("svg")
+    .attr("viewBox", [-width / 2, -height / 2, width, width])
+    .style("font", "10px sans-serif");
+
+  const tooltip = d3.select("#tooltip");
+
+  // Append the arcs
+  const path = svg.append("g")
+   .selectAll("path")
+   .data(root.descendants().slice(1))
+   .enter().append("path")
+   .attr("fill", d => { while (d.depth > 1) d = d.parent; return color(d.data.name); })
+   .attr("fill-opacity", d => arcVisible(d.current) ? (d.children ? 0.6 : 0.4) : 0)
+   .attr("d", arc)
+   .on("mouseover", function(d) {
+       d3.select("#tooltip")
+           .style("visibility", "visible")
+           .text(d.data.name + ": " + d.value);
+   })
+   .on("mousemove", function() {
+       return tooltip
+           .style("top", (d3.event.pageY - 10) + "px")
+           .style("left", (d3.event.pageX + 10) + "px");
+   })
+   .on("mouseout", function() {
+       return tooltip.style("visibility", "hidden");
+   });
+
+  // Labels
+  const label = svg.append("g")
+   .selectAll("text")
+   .data(root.descendants().slice(1))
+   .enter().append("text")
+   .attr("fill-opacity", d => +labelVisible(d.current))
+   .attr("transform", d => labelTransform(d.current))
+   .text(d => d.data.name)
+   .on("mouseover", function(d) {
+       d3.select("#tooltip")
+           .style("visibility", "visible")
+           .text(d.data.name + ": " + d.value);
+   })
+   .on("mousemove", function() {
+       return tooltip
+           .style("top", (d3.event.pageY - 10) + "px")
+           .style("left", (d3.event.pageX + 10) + "px");
+   })
+   .on("mouseout", function() {
+       return tooltip.style("visibility", "hidden");
+   });
+
+  // Functions for visibility
+  function arcVisible(d) {
+    return d.y1 <= 3 && d.y0 >= 1 && d.x1 > d.x0;
+  }
+
+  function labelVisible(d) {
+    return d.y1 <= 3 && d.y0 >= 1 && (d.y1 - d.y0) * (d.x1 - d.x0) > 0.03;
+  }
+
+  function labelTransform(d) {
+    const x = (d.x0 + d.x1) / 2 * 180 / Math.PI;
+    const y = (d.y0 + d.y1) / 2 * radius;
+    return `rotate(${x - 90}) translate(${y},0) rotate(${x < 180 ? 0 : 180})`;
+  }
+</script>
+</body>
+</html>
