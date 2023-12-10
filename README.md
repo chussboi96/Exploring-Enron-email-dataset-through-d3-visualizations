@@ -1,5 +1,5 @@
 # Exploring-Enron-email-dataset-through-d3-visualizations
-This Data Analysis&Visualization semester project revolved around creating interactive d3.js visualizations. 
+This Data Analysis&Visualization semester project revolved around creating interactive d3.js visualizations using a Flask app. 
 I created sunburst, tree, scatterplot, wordcloud and force-directed graphs using the code on observable d3.js
 Although the viz werent interactive and brushing/linking wasnt applied, it was something.
 I implemented LSA, NER and topic modelling to visualize the insights.
